@@ -1,149 +1,108 @@
-// ===== 数据层 =====
-const STORAGE_KEY = 'todo-list-data';
+$(document).ready(function () {
+  // 从 localStorage 获取数据，如果没有则返回空数组
+  let todos = JSON.parse(localStorage.getItem('jq-todos')) || [];
+  let currentFilter = 'all'; // 新增：记录当前的筛选状态
 
-// 从 localStorage 读取，没有则返回空数组
-let todos = loadTodos();
-let currentFilter = 'all';
-
-// ===== DOM 元素 =====
-const form = document.getElementById('todo-form');
-const input = document.getElementById('todo-input');
-const listEl = document.getElementById('todo-list');
-const countEl = document.getElementById('count');
-const clearCompletedBtn = document.getElementById('clear-completed');
-const filterBtns = document.querySelectorAll('.filter');
-
-// ===== 工具函数 =====
-function loadTodos() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
+  // 保存数据到 localStorage
+  function saveData() {
+    localStorage.setItem('jq-todos', JSON.stringify(todos));
+    updateCount();
   }
-}
 
-function saveTodos() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-}
+  // 更新底部计数
+  function updateCount() {
+    const done = todos.filter((t) => t.done).length;
+    $('#count').text(`共 ${todos.length} 项，已完成 ${done} 项`);
+  }
 
-// ===== 渲染 =====
-function getVisibleTodos() {
-  if (currentFilter === 'active') return todos.filter((t) => !t.done);
-  if (currentFilter === 'completed') return todos.filter((t) => t.done);
-  return todos;
-}
+  // 渲染列表
+  function renderList() {
+    const $list = $('#todo-list');
+    $list.empty(); // 清空列表
 
-function render() {
-  const visible = getVisibleTodos();
-  listEl.innerHTML = '';
+    // 新增：根据筛选条件过滤数据
+    let filteredTodos = todos.filter(function (todo) {
+      if (currentFilter === 'active') return !todo.done;
+      if (currentFilter === 'completed') return todo.done;
+      return true; // 'all'
+    });
 
-  if (visible.length === 0) {
-    const empty = document.createElement('li');
-    empty.className = 'empty';
-    empty.textContent =
-      currentFilter === 'all'
-        ? '暂无待办事项，先添加一个吧'
-        : '没有符合条件的任务';
-    listEl.appendChild(empty);
-  } else {
-    visible.forEach((todo) => {
-      listEl.appendChild(createTodoItem(todo));
+    if (filteredTodos.length === 0) {
+      $list.append('<li style="text-align:center;color:#ccc;padding:20px;">暂无符合条件的待办事项</li>');
+    }
+
+    // 遍历数据并生成 HTML
+    // 注意：这里的 index 是 filteredTodos 的索引，我们需要去 todos 里找真实的数据
+    $.each(filteredTodos, function (_, todo) {
+      const doneClass = todo.done ? 'done' : '';
+      // 获取该 todo 在原始 todos 数组中的真实索引
+      const originalIndex = todos.indexOf(todo);
+      
+      const $li = $('<li>').addClass('todo-item ' + doneClass).attr('data-index', originalIndex);
+      
+      const $checkbox = $('<div>').addClass('checkbox');
+      const $text = $('<span>').addClass('text').text(todo.text);
+      const $delBtn = $('<button>').addClass('delete-btn').text('删除');
+
+      // 点击切换完成状态
+      $checkbox.add($text).on('click', function () {
+        todos[originalIndex].done = !todos[originalIndex].done;
+        saveData();
+        renderList();
+      });
+
+      // 点击删除
+      $delBtn.on('click', function (e) {
+        e.stopPropagation();
+        $(this).parent().fadeOut(300, function () {
+          todos.splice(originalIndex, 1);
+          saveData();
+          renderList();
+        });
+      });
+
+      $li.append($checkbox, $text, $delBtn);
+      $list.append($li);
     });
   }
 
-  // 底部统计
-  const total = todos.length;
-  const doneCount = todos.filter((t) => t.done).length;
-  countEl.textContent = `共 ${total} 项，已完成 ${doneCount} 项`;
+  // 添加待办事项
+  function addTodo() {
+    const text = $('#todo-input').val().trim();
+    if (text === '') return;
 
-  // 清除按钮只在有已完成项时可用
-  clearCompletedBtn.disabled = doneCount === 0;
-  clearCompletedBtn.style.opacity = doneCount === 0 ? 0.5 : 1;
-}
+    todos.push({
+      text: text,
+      done: false,
+    });
 
-function createTodoItem(todo) {
-  const li = document.createElement('li');
-  li.className = 'todo-item' + (todo.done ? ' done' : '');
-  li.dataset.id = todo.id;
+    $('#todo-input').val('');
+    saveData();
+    renderList();
+  }
 
-  // 勾选圆圈
-  const checkbox = document.createElement('div');
-  checkbox.className = 'checkbox';
-  checkbox.addEventListener('click', () => toggleTodo(todo.id));
-
-  // 文本
-  const text = document.createElement('span');
-  text.className = 'text';
-  text.textContent = todo.text;
-  text.addEventListener('click', () => toggleTodo(todo.id));
-
-  // 删除按钮
-  const delBtn = document.createElement('button');
-  delBtn.className = 'delete-btn';
-  delBtn.textContent = '删除';
-  delBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    deleteTodo(todo.id);
+  // 绑定事件：添加
+  $('#add-btn').on('click', addTodo);
+  $('#todo-input').on('keypress', function (e) {
+    if (e.which === 13) addTodo();
   });
 
-  li.appendChild(checkbox);
-  li.appendChild(text);
-  li.appendChild(delBtn);
-  return li;
-}
-
-// ===== 操作 =====
-function addTodo(text) {
-  const value = text.trim();
-  if (!value) return;
-  todos.push({
-    id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
-    text: value,
-    done: false,
-    createdAt: Date.now(),
+  // 新增事件：点击筛选按钮
+  $('.filter').on('click', function () {
+    currentFilter = $(this).data('filter'); // 获取当前点击的 filter 值
+    $('.filter').removeClass('active');     // 移除所有按钮的 active 类
+    $(this).addClass('active');             // 给当前按钮加上 active 类
+    renderList();                           // 重新渲染
   });
-  saveTodos();
-  render();
-}
 
-function toggleTodo(id) {
-  const todo = todos.find((t) => t.id === id);
-  if (!todo) return;
-  todo.done = !todo.done;
-  saveTodos();
-  render();
-}
+  // 清除已完成
+  $('#clear-completed').on('click', function () {
+    todos = todos.filter((t) => !t.done);
+    saveData();
+    renderList();
+  });
 
-function deleteTodo(id) {
-  todos = todos.filter((t) => t.id !== id);
-  saveTodos();
-  render();
-}
-
-function clearCompleted() {
-  todos = todos.filter((t) => !t.done);
-  saveTodos();
-  render();
-}
-
-// ===== 事件绑定 =====
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  addTodo(input.value);
-  input.value = '';
-  input.focus();
+  // 初始化渲染
+  updateCount();
+  renderList();
 });
-
-filterBtns.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    currentFilter = btn.dataset.filter;
-    filterBtns.forEach((b) => b.classList.toggle('active', b === btn));
-    render();
-  });
-});
-
-clearCompletedBtn.addEventListener('click', clearCompleted);
-
-// ===== 初始化 =====
-render();
