@@ -1,42 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>创建一个待办事项列表-引入jQuery</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- 引入 jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-</head>
-<body>
-  <div class="app">
-    <h1>待办事项 (jQuery版)</h1>
-
-    <form id="todo-form" class="input-row">
-      <input
-        type="text"
-        id="todo-input"
-        placeholder="输入待办事项，按回车添加"
-        autocomplete="off"
-      />
-      <button type="submit" id="add-btn">添加</button>
-    </form>
-
-    <div class="filters">
-      <button class="filter active" data-filter="all">全部</button>
-      <button class="filter" data-filter="active">未完成</button>
-      <button class="filter" data-filter="completed">已完成</button>
-    </div>
-
-    <ul id="todo-list" class="todo-list"></ul>
-
-    <div class="footer">
-      <span id="count">共 0 项</span>
-      <button id="clear-completed">清除已完成</button>
-    </div>
-  </div>
-
-  <!-- 引入我们的脚本 -->
-  <script src="script.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>todo-project-vue</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
