@@ -101,14 +101,14 @@ const clearCompleted = () => {
       >已完成</button>
     </div>
 
-    <ul class="todo-list">
-      <!-- v-if 判断空状态 -->
+        <ul class="todo-list">
+      <!-- v-if 判断空状态，空状态：只在没有数据时显示，不放进 TransitionGroup 里 -->
       <li v-if="filteredTodos.length === 0" class="empty">
         {{ currentFilter === 'all' ? '暂无待办事项，先添加一个吧' : '没有符合条件的任务' }}
       </li>
 
-      <!-- v-for 循环渲染列表，配合 TransitionGroup 实现动画 -->
-      <TransitionGroup name="list">
+      <!-- v-for 循环渲染列表，配合 TransitionGroup 实现动画，列表状态：使用 Vue 的动画组件 -->
+      <TransitionGroup name="list" v-else>
         <li 
           v-for="todo in filteredTodos" 
           :key="todo.id" 

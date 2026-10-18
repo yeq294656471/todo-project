@@ -1,4 +1,3 @@
-/* 原有的 CSS 保持不变... */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -18,7 +17,7 @@ body {
 
 .app {
   width: 100%;
-  max-width: 520px;
+  min-width: 520px;
   background: #fff;
   border-radius: 16px;
   padding: 28px;
@@ -38,7 +37,7 @@ h1 {
   margin-bottom: 16px;
 }
 
-#todo-input {
+.input-row input {
   flex: 1;
   padding: 12px 14px;
   font-size: 15px;
@@ -48,11 +47,11 @@ h1 {
   transition: border-color 0.2s;
 }
 
-#todo-input:focus {
+.input-row input:focus {
   border-color: #667eea;
 }
 
-#add-btn {
+.input-row button {
   padding: 12px 20px;
   font-size: 15px;
   color: #fff;
@@ -63,7 +62,7 @@ h1 {
   transition: background 0.2s;
 }
 
-#add-btn:hover {
+.input-row button:hover {
   background: #5568d3;
 }
 
@@ -94,6 +93,7 @@ h1 {
   list-style: none;
   max-height: 420px;
   overflow-y: auto;
+  position: relative; /* 配合 Vue 动画 */
 }
 
 .todo-item {
@@ -102,17 +102,7 @@ h1 {
   gap: 10px;
   padding: 12px 10px;
   border-bottom: 1px solid #f0f0f0;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  background-color: #fff; /* 配合 Vue 动画防止透明 */
 }
 
 .todo-item .checkbox {
@@ -199,6 +189,7 @@ h1 {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 #clear-completed:hover {
