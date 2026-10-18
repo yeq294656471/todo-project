@@ -12,12 +12,16 @@
   <div class="app">
     <h1>待办事项 (jQuery版)</h1>
 
-    <div class="input-row">
-      <input type="text" id="todo-input" placeholder="输入待办事项，按回车或点击添加" autocomplete="off" />
-      <button id="add-btn">添加</button>
-    </div>
+    <form id="todo-form" class="input-row">
+      <input
+        type="text"
+        id="todo-input"
+        placeholder="输入待办事项，按回车添加"
+        autocomplete="off"
+      />
+      <button type="submit" id="add-btn">添加</button>
+    </form>
 
-    <!-- 新增：筛选按钮 -->
     <div class="filters">
       <button class="filter active" data-filter="all">全部</button>
       <button class="filter" data-filter="active">未完成</button>
